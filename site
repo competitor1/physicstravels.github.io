@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Is Nina Hosting Shabbat?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+        }
+        .info {
+            margin-bottom: 20px;
+        }
+        .yes {
+            color: green;
+            font-weight: bold;
+        }
+        .no {
+            color: red;
+            font-weight: bold;
+        }
+        form {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        input, select, button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #444;
+        }
+        #rsvpList, #menuList {
+            margin-top: 20px;
+        }
+        .rsvp-item, .menu-item {
+            background: #f1f1f1;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .menu-item span {
+            font-weight: bold;
+        }
+        .menu-item.confirmed {
+            background: #e6ffe6;
+        }
+        .menu-item.requested {
+            background: #fff0e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Is Nina Hosting Shabbat Today?</h1>
+        <div class="info">
+            <h2>Hosting Status: <span class="yes">Yes!</span></h2>
+        </div>
+        <div class="info">
+            <h2>Date:</h2>
+            <p>Friday, September 1, 2024</p>
+        </div>
+        <div class="info">
+            <h2>Time:</h2>
+            <p>7:00 PM</p>
+        </div>
+        <div class="info">
+            <h2>Location:</h2>
+            <p>123 Shalom Street, Anytown, USA</p>
+        </div>
+        <div class="info">
+            <h2>Menu:</h2>
+            <form id="menuForm">
+                <input type="text" id="dishName" placeholder="Dish Name" required>
+                <select id="dishType">
+                    <option value="confirmed">I'll bring this dish</option>
+                    <option value="requested">I'd like to request this dish</option>
+                </select>
+                <input type="text" id="personName" placeholder="Your Name" required>
+                <button type="submit">Add to Menu</button>
+            </form>
+            <div id="menuList"></div>
+        </div>
+        <div class="info">
+            <h2>TBS Plans:</h2>
+            <p>We will be attending services at Temple Beth Shalom at 6:00 PM before dinner. All are welcome to join!</p>
+            <p id="tbsMinyanInfo"></p>
+        </div>
+        
+        <h2>RSVP</h2>
+        <form id="rsvpForm">
+            <input type="text" id="name" placeholder="Your Name" required>
+            <select id="attending">
+                <option value="yes">Yes, I'm attending</option>
+                <option value="no">No, I can't make it</option>
+            </select>
+            <select id="plusOne">
+                <option value="0">No +1</option>
+                <option value="1">Yes, bringing a +1</option>
+            </select>
+            <button type="submit">Submit RSVP</button>
+        </form>
+        
+        <h2>Current RSVPs</h2>
+        <div id="rsvpList"></div>
+    </div>
+
+    <script>
+        // Load RSVPs and menu items from local storage
+        let rsvps = JSON.parse(localStorage.getItem('rsvps')) || [];
+        let menuItems = JSON.parse(localStorage.getItem('menuItems')) || [];
+
+        function displayRSVPs() {
+            const rsvpList = document.getElementById('rsvpList');
+            rsvpList.innerHTML = '';
+            rsvps.forEach(rsvp => {
+                const rsvpItem = document.createElement('div');
+                rsvpItem.classList.add('rsvp-item');
+                rsvpItem.innerHTML = `
+                    <strong>${rsvp.name}</strong> - 
+                    ${rsvp.attending === 'yes' ? 'Attending' : 'Not attending'}
+                    ${rsvp.plusOne === '1' ? ' (+ 1)' : ''}
+                `;
+                rsvpList.appendChild(rsvpItem);
+            });
+        }
+
+        function displayMenuItems() {
+            const menuList = document.getElementById('menuList');
+            menuList.innerHTML = '';
+            menuItems.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.classList.add('menu-item', item.type);
+                menuItem.innerHTML = `
+                    <span>${item.dish}</span> - 
+                    ${item.type === 'confirmed' ? 'Brought by' : 'Requested by'} 
+                    ${item.person}
+                `;
+                menuList.appendChild(menuItem);
+            });
+        }
+
+        document.getElementById('rsvpForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const attending = document.getElementById('attending').value;
+            const plusOne = document.getElementById('plusOne').value;
+
+            rsvps.push({ name, attending, plusOne });
+            localStorage.setItem('rsvps', JSON.stringify(rsvps));
+
+            displayRSVPs();
+            this.reset();
+        });
+
+        document.getElementById('menuForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const dish = document.getElementById('dishName').value;
+            const type = document.getElementById('dishType').value;
+            const person = document.getElementById('personName').value;
+
+            menuItems.push({ dish, type, person });
+            localStorage.setItem('menuItems', JSON.stringify(menuItems));
+
+            displayMenuItems();
+            this.reset();
+        });
+
+        displayRSVPs();
+        displayMenuItems();
+
+        // TBS Minyan Information - Manual Update
+        const thisWeekMinyan = 'partnership'; // Change this to 'egalitarian' when appropriate
+        const tbsMinyanInfo = document.getElementById('tbsMinyanInfo');
+        tbsMinyanInfo.textContent = `TBS is having ${thisWeekMinyan} minyan this week.`;
+    </script>
+</body>
+</html>
